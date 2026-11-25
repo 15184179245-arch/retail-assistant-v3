@@ -1,2 +1,7 @@
-# retail-assistant-v3
-Retail Assistant V3 | Sanitized source portfolio
+# 零售门店助手 V3
+
+个人软件项目 · Android 门店操作与设备联调
+
+把商品查询、开单和打印串起来。V3 的工作重点是 Android 客户端与 Python 后端接口，以及蓝牙、网络打印的联调和故障排查。
+
+**公开版状态：** 项目入口已开放，源码正在筛除真实库存、价格、单据和内部配置，核验后分批发布。此仓库不接原门店的业务系统。
