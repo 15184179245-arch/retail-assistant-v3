@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.db
+*.sqlite*
+*.env
+.env*
+*.log
+.gradle/
+build/
+local.properties
+*.jks
+*.keystore
+.DS_Store
