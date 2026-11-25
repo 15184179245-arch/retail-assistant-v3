@@ -1,7 +1,7 @@
 """S11 无售价商品清单 —— 过滤口径单测。
 
 只测纯函数（``src/search/unpriced.py``），用临时 sqlite 建库：
-不 import search_server（省 jieba 词典加载）、不碰线上 业务数据库、不起 HTTP 服务。
+不 import search_server（省 jieba 词典加载）、不碰线上 data/wujin.db、不起 HTTP 服务。
 """
 import os
 import sqlite3
@@ -35,11 +35,11 @@ _ROWS = [
 
 
 class _UnpricedDbCase(unittest.TestCase):
-    """公共夹具：临时 sqlite 建 5 条样本，测完即毁（绝不碰线上 业务数据库）。"""
+    """公共夹具：临时 sqlite 建 5 条样本，测完即毁（绝不碰线上 data/wujin.db）。"""
 
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
-        self.db = sqlite3.connect(os.path.join(self.tmp.name, "sample.sqlite"))
+        self.db = sqlite3.connect(os.path.join(self.tmp.name, "wujin.db"))
         self.db.row_factory = sqlite3.Row
         self.db.execute("CREATE TABLE products (%s)" % ", ".join(
             (c + " INTEGER PRIMARY KEY") if c == "id" else c for c in _COLS))
@@ -72,7 +72,7 @@ class 无售价口径Spec(_UnpricedDbCase):
         self.assertIn("空价清退品", self.names(), "sell_price 为 NULL 视同无价")
 
     def test_冻结品默认计入_与CSV对账口径一致(self):
-        """默认全量计入（含 frozen），这是与 合成测试对照表 对账的口径。"""
+        """默认全量计入（含 frozen），这是与 _reports/unpriced-20260905.csv 对账的口径。"""
         got = query_unpriced(self.db)
         self.assertEqual(got["total"], 4, "5 条里 4 条无价（含 frozen 与 NULL 状态）")
         self.assertIn("负价冻结品", {i["name"] for i in got["items"]})
@@ -189,11 +189,11 @@ class Where片段Spec(unittest.TestCase):
         self.assertEqual(_like_param("a\\b"), "%a\\\\b%")
 
 
-# 注：此处原有「CSV对账Spec」把线上 业务数据库 的无售价总数与
-# 合成测试对照表（S11 2026-09-05 验收快照）行数绑死对账。
+# 注：此处原有「CSV对账Spec」把线上 data/wujin.db 的无售价总数与
+# _reports/unpriced-20260905.csv（S11 2026-09-05 验收快照）行数绑死对账。
 # S17 真同步上线后售价由上游合法回填、活库计数必然漂移（2026-09-11 实证 1967≠1972 常红），
-# 且与本文件「不碰线上 业务数据库」的契约冲突，故撤下该断言；
-# 当日快照 CSV 留档 测试输出/ 作历史证据，计数口径由上方 无售价口径Spec 覆盖。
+# 且与本文件「不碰线上 data/wujin.db」的契约冲突，故撤下该断言；
+# 当日快照 CSV 留档 _reports/ 作历史证据，计数口径由上方 无售价口径Spec 覆盖。
 
 
 if __name__ == "__main__":

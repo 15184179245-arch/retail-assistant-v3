@@ -1,0 +1,582 @@
+{
+  "catalogId": "retaildemo-catalog-v1",
+  "protocolVersion": "v0.9.1",
+  "updated": "2026-09-21",
+  "comment": "老王生成式 UI 组件目录（单一真源）。给三处用：① src/agent/a2ui.py 出网前校验；② scripts/gen_a2ui_llm_instructions.py 生成喂 hermes 的说明书；③ APP 渲染层白名单（由 test_a2ui.py 的跨语言一致性用例锁住，不许漂移）。样式属性一律不在本目录内 —— 外观只从 design/tokens.json 与 M14 画布取。",
+  "geometry": "design/A2UI-CATALOG.md",
+  "dataBinding": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "path"
+    ],
+    "unevaluatedProperties": false
+  },
+  "action": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "enum": [
+          "navigate"
+        ],
+        "comment": "只允许导航；confirm/exec 等写语义不在目录内，写操作只能走 pending_actions 票据"
+      },
+      "context": {
+        "type": "object"
+      }
+    },
+    "required": [
+      "name",
+      "context"
+    ],
+    "unevaluatedProperties": false
+  },
+  "routes": {
+    "allow": [
+      "product",
+      "bill_detail",
+      "customers",
+      "low_stock",
+      "stocktake",
+      "movements",
+      "print_queue",
+      "todos",
+      "search"
+    ],
+    "deny": [
+      "settings",
+      "recyclebin",
+      "onboarding",
+      "shelf_write",
+      "adjust",
+      "new_bill",
+      "closeday",
+      "agent_chat"
+    ],
+    "args": {
+      "product": {
+        "required": [
+          "barcode"
+        ]
+      },
+      "bill_detail": {
+        "required": [
+          "billId"
+        ]
+      },
+      "low_stock": {
+        "required": []
+      },
+      "customers": {
+        "required": []
+      },
+      "stocktake": {
+        "required": []
+      },
+      "movements": {
+        "required": []
+      },
+      "print_queue": {
+        "required": []
+      },
+      "todos": {
+        "required": []
+      },
+      "search": {
+        "required": []
+      }
+    }
+  },
+  "enums": {
+    "variant": [
+      "h1",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "body",
+      "caption",
+      "label"
+    ],
+    "align": [
+      "start",
+      "center",
+      "end"
+    ],
+    "format": [
+      "money",
+      "qty",
+      "text"
+    ],
+    "tone": [
+      "primary",
+      "danger",
+      "warning",
+      "stock"
+    ]
+  },
+  "limits": {
+    "maxRows": 5,
+    "maxColumns": 5,
+    "maxStats": 3,
+    "maxActions": 2,
+    "maxRowChildren": 3
+  },
+  "answerBudget": {
+    "comment": "文字回答的硬长度预算（卡片没有这份约束，卡片走 limits）。动因：2026-09-21 实测店员体感的等待里，答案每多一行都是在柜台边干等；明细本来由卡片显示，复述纯属浪费。知识问答与纯判断类不受此限（见说明书第 5 条例外）。",
+    "kindBudgets": [
+      {"kind": "查价 / 库存 / 有没有货", "lines": 2, "chars": 60},
+      {"kind": "预警 / 待办等清单", "lines": 3, "chars": 90},
+      {"kind": "经营判断与下一步建议", "lines": 2, "chars": 70}
+    ],
+    "forbid": [
+      "开场铺垫（「我帮你查了一下」「根据系统数据」）",
+      "结尾收束（「有需要再叫我」「建议核对后告诉我」）",
+      "复述卡片已经显示出来的数字"
+    ]
+  },
+  "components": {
+    "Card": {
+      "required": [
+        "id",
+        "component",
+        "child"
+      ],
+      "properties": {
+        "id": "string",
+        "component": "string",
+        "child": "string"
+      }
+    },
+    "Column": {
+      "required": [
+        "id",
+        "component",
+        "children"
+      ],
+      "properties": {
+        "id": "string",
+        "component": "string",
+        "children": "array"
+      }
+    },
+    "Row": {
+      "required": [
+        "id",
+        "component",
+        "children"
+      ],
+      "properties": {
+        "id": "string",
+        "component": "string",
+        "children": "array"
+      }
+    },
+    "Text": {
+      "required": [
+        "id",
+        "component",
+        "text"
+      ],
+      "properties": {
+        "id": "string",
+        "component": "string",
+        "text": "binding",
+        "variant": "enum:variant",
+        "maxLines": "int"
+      }
+    },
+    "StatGrid": {
+      "required": [
+        "id",
+        "component",
+        "items"
+      ],
+      "properties": {
+        "id": "string",
+        "component": "string",
+        "items": "stats"
+      }
+    },
+    "Table": {
+      "required": [
+        "id",
+        "component",
+        "columns",
+        "rows"
+      ],
+      "properties": {
+        "id": "string",
+        "component": "string",
+        "columns": "columns",
+        "rows": "binding",
+        "rowAction": "actionWrapper"
+      }
+    },
+    "NavCard": {
+      "required": [
+        "id",
+        "component",
+        "actions"
+      ],
+      "properties": {
+        "id": "string",
+        "component": "string",
+        "actions": "actions"
+      }
+    }
+  },
+  "subStructures": {
+    "column": {
+      "required": [
+        "key",
+        "label",
+        "weight",
+        "align"
+      ],
+      "properties": {
+        "key": "string",
+        "label": "string",
+        "weight": "int",
+        "align": "enum:align",
+        "format": "enum:format",
+        "tone": "enum:tone"
+      }
+    },
+    "stat": {
+      "required": [
+        "label",
+        "value"
+      ],
+      "properties": {
+        "label": "string",
+        "value": "binding",
+        "tone": "enum:tone"
+      }
+    },
+    "navAction": {
+      "required": [
+        "label",
+        "event"
+      ],
+      "properties": {
+        "label": "string",
+        "event": "action"
+      }
+    }
+  },
+  "forbiddenEverywhere": [
+    "color",
+    "colors",
+    "background",
+    "backgroundColor",
+    "fontSize",
+    "lineHeight",
+    "fontFamily",
+    "padding",
+    "margin",
+    "borderRadius",
+    "width",
+    "height",
+    "opacity",
+    "style",
+    "styles",
+    "theme",
+    "shadow",
+    "elevation"
+  ],
+  "intent": {
+    "safeOps": [
+      "low_stock",
+      "debts",
+      "todos",
+      "data_overview",
+      "governance",
+      "status"
+    ],
+    "comment": "只有这些 op 不需要参数、纯只读，允许凭问题意图自动补跑一次出卡；search/quick_pricing/knowledge_search/identify 等必须带参数，空参跑＝垃圾结果，禁止触发。"
+  },
+  "display": {
+    "comment": "展示配置单一真源：新增 op 的卡片＝在 ops 里加一行，不改 a2ui.py。",
+    "labels": [
+      [
+        "name",
+        "品名"
+      ],
+      [
+        "matched_name",
+        "品名"
+      ],
+      [
+        "title",
+        "标题"
+      ],
+      [
+        "question",
+        "问题"
+      ],
+      [
+        "spec",
+        "规格"
+      ],
+      [
+        "model",
+        "型号"
+      ],
+      [
+        "stock_qty",
+        "库存"
+      ],
+      [
+        "qty",
+        "数量"
+      ],
+      [
+        "count",
+        "数量"
+      ],
+      [
+        "sell_price",
+        "售价"
+      ],
+      [
+        "price",
+        "单价"
+      ],
+      [
+        "subtotal",
+        "小计"
+      ],
+      [
+        "amount",
+        "金额"
+      ],
+      [
+        "debt",
+        "欠款"
+      ],
+      [
+        "cost_price",
+        "成本"
+      ],
+      [
+        "unit",
+        "单位"
+      ],
+      [
+        "location",
+        "货位"
+      ],
+      [
+        "category",
+        "分类"
+      ],
+      [
+        "status",
+        "状态"
+      ],
+      [
+        "state",
+        "状态"
+      ],
+      [
+        "summary",
+        "摘要"
+      ],
+      [
+        "reason",
+        "原因"
+      ],
+      [
+        "answer",
+        "回答"
+      ],
+      [
+        "text",
+        "内容"
+      ],
+      [
+        "value",
+        "数值"
+      ]
+    ],
+    "moneyKeys": [
+      "sell_price",
+      "price",
+      "subtotal",
+      "amount",
+      "debt",
+      "total_outstanding",
+      "cost_price",
+      "grand_total"
+    ],
+    "qtyKeys": [
+      "stock_qty",
+      "qty",
+      "count",
+      "hit"
+    ],
+    "skipKeys": [
+      "success",
+      "code",
+      "error",
+      "user_message",
+      "hint",
+      "_request_id",
+      "offset",
+      "limit",
+      "threshold",
+      "id",
+      "product_id",
+      "bill_id",
+      "customer_id",
+      "confidence",
+      "needs_review",
+      "images",
+      "created_at",
+      "updated_at",
+      "needsSync",
+      "pendingSync",
+      "total",
+      "data",
+      "items",
+      "rows",
+      "top"
+    ],
+    "rowsKeys": [
+      "data",
+      "items",
+      "rows",
+      "top",
+      "results",
+      "list"
+    ],
+    "ops": {
+      "low_stock": {
+        "title": "库存预警",
+        "rowsKey": "data",
+        "totalFrom": "total",
+        "showTotalInTitle": false,
+        "columns": [
+          "name",
+          "spec",
+          "stock_qty",
+          "sell_price"
+        ],
+        "stats": [
+          {
+            "label": "预警条目",
+            "from": "total",
+            "tone": "danger",
+            "key": "count"
+          },
+          {
+            "label": "本页未定价",
+            "from": "countZero",
+            "field": "sell_price",
+            "tone": "warning",
+            "key": "unpriced"
+          },
+          {
+            "label": "本页未绑货位",
+            "from": "countEmpty",
+            "field": "location",
+            "tone": "primary",
+            "key": "unlocated"
+          }
+        ],
+        "nav": [
+          "看完整预警清单",
+          "low_stock"
+        ]
+      },
+      "quick_pricing": {
+        "title": "报价单",
+        "rowsKey": "items",
+        "nav": [
+          "去查价核对",
+          "search"
+        ]
+      },
+      "debts": {
+        "title": "客户欠款",
+        "rowsKey": "top",
+        "labelOverrides": {
+          "name": "客户"
+        },
+        "stats": [
+          {
+            "label": "欠款合计",
+            "from": "field",
+            "field": "total_outstanding",
+            "tone": "danger",
+            "key": "outstanding"
+          },
+          {
+            "label": "挂账单数",
+            "from": "field",
+            "field": "pending_count",
+            "tone": "warning",
+            "key": "pending"
+          }
+        ],
+        "nav": [
+          "看全部客户",
+          "customers"
+        ]
+      },
+      "todos": {
+        "title": "待办清单",
+        "rowsKey": "data",
+        "nav": [
+          "去待办",
+          "todos"
+        ]
+      },
+      "search": {
+        "title": "查价结果",
+        "rowsKey": "data"
+      },
+      "identify": {
+        "title": "识货对照",
+        "rowsKey": "data"
+      },
+      "reco": {
+        "title": "连带推荐",
+        "rowsKey": "items",
+        "labelOverrides": {
+          "name": "推荐品名"
+        }
+      },
+      "knowledge_search": {
+        "title": "知识库",
+        "rowsKey": "data"
+      },
+      "xzg": {
+        "title": "上游商品",
+        "rowsKey": "rows"
+      },
+      "governance": {
+        "title": "治理进度"
+      },
+      "data_overview": {
+        "title": "经营总览"
+      },
+      "status": {
+        "title": "服务状态"
+      }
+    },
+    "noDisplay": [
+      "sku",
+      "barcode",
+      "cost_price"
+    ],
+    "weightTotal": 10.0,
+    "measureCapUnits": 12,
+    "moneyMinUnits": 9
+  }
+}

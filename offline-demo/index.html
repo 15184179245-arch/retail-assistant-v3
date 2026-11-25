@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>零售助手 V3 · 离线演示</title>
+<style>
+:root{font-family:system-ui,sans-serif;color:#102726;background:#eef6f4;color-scheme:light}
+body{max-width:800px;margin:0 auto;padding:32px 20px}header{border-bottom:1px solid #b4cdca;padding-bottom:20px}
+h1{margin:0;color:#0d4d48}p{line-height:1.55}small{display:block;margin-top:10px}
+section{background:white;border:1px solid #b4cdca;border-radius:12px;padding:14px 20px;margin:12px 0}
+button{font:inherit;padding:7px 12px;background:#12504c;color:#fff;border:0;border-radius:7px;cursor:pointer}
+pre{white-space:pre-wrap;overflow-wrap:anywhere}summary{cursor:pointer} code{font-family:monospace}
+</style>
+<header><h1>零售助手 V3</h1>
+<p>查看库位、商品查询和价签指令。全部是合成数据，不连接企业系统或打印机。</p>
+<form id="controls">
+<label>商品关键字 <input id="query" value="演示耗材" maxlength="80"></label>
+<label>价签大小 <select id="size"><option value="50">50 × 30 mm</option><option value="60">60 × 40 mm</option></select></label>
+<button id="reload" type="submit">重新运行</button></form><small id="mode" role="status"></small></header>
+<main>
+<section><h2>库位与货架</h2><pre id="inventory"></pre></section>
+<section><h2>商品查询</h2><pre id="results"></pre></section>
+<section><h2>价签指令</h2><p>以下是实际标签布局代码生成的 TSPL 命令，仅展示，不发送。</p><pre id="label"></pre>
+<details><summary>查看排版结构</summary><pre id="ops"></pre></details></section>
+</main>
+<script type="application/json" id="sample">{
+  "synthetic": true,
+  "inventory_tree": [
+    {
+      "id": 1,
+      "name": "演示楼层",
+      "description": "",
+      "sort_order": 0,
+      "created_at": "2026-01-01 00:00:00",
+      "children": [
+        {
+          "id": 1,
+          "floor_id": 1,
+          "name": "演示区",
+          "description": "",
+          "sort_order": 0,
+          "created_at": "2026-01-01 00:00:00",
+          "children": [
+            {
+              "id": 1,
+              "zone_id": 1,
+              "name": "演示货架",
+              "description": "",
+              "sort_order": 0,
+              "created_at": "2026-01-01 00:00:00",
+              "children": [
+                {
+                  "id": 1,
+                  "rack_id": 1,
+                  "name": "演示层",
+                  "description": "",
+                  "sort_order": 0,
+                  "created_at": "2026-01-01 00:00:00",
+                  "children": [
+                    {
+                      "id": 1,
+                      "level_id": 1,
+                      "name": "演示格",
+                      "code": "DEMO-01",
+                      "description": "",
+                      "sort_order": 0,
+                      "created_at": "2026-01-01 00:00:00",
+                      "product_count": 1
+                    },
+                    {
+                      "id": 2,
+                      "level_id": 1,
+                      "name": "第二演示格",
+                      "code": "DEMO-02",
+                      "description": "",
+                      "sort_order": 0,
+                      "created_at": "2026-01-01 00:00:00",
+                      "product_count": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "search": [
+    {
+      "id": 1,
+      "barcode": "",
+      "sku": "DEMO-101",
+      "name": "演示耗材",
+      "spec": "规格 A",
+      "sell_price": 8.8,
+      "stock_qty": 12,
+      "location": "DEMO-01",
+      "images": ""
+    }
+  ],
+  "print_ops": [
+    [
+      "txt",
+      14,
+      14,
+      1,
+      "DEMO-101",
+      1
+    ],
+    [
+      "txt",
+      14,
+      46,
+      1,
+      "演示耗材",
+      1
+    ],
+    [
+      "txt",
+      14,
+      78,
+      1,
+      "规格:规格 A",
+      1
+    ],
+    [
+      "txt",
+      14,
+      129,
+      2,
+      "8.80",
+      2
+    ],
+    [
+      "txt",
+      114,
+      153,
+      1,
+      "盒",
+      1
+    ],
+    [
+      "qr",
+      256,
+      72,
+      5,
+      "DEMO-101"
+    ]
+  ],
+  "print_tspl": "SIZE 50 mm, 30 mm\nGAP 2 mm, 0 mm\nCLS\nTEXT 14,14,\"TSS24.BF2\",0,1,1,\"DEMO-101\"\nTEXT 14,46,\"TSS24.BF2\",0,1,1,\"演示耗材\"\nTEXT 14,78,\"TSS24.BF2\",0,1,1,\"规格:规格 A\"\nTEXT 14,129,\"TSS24.BF2\",0,2,2,\"8.80\"\nTEXT 114,153,\"TSS24.BF2\",0,1,1,\"盒\"\nQRCODE 256,72,M,5,A,0,\"DEMO-101\"\nPRINT 1"
+}</script>
+<script>
+const q = id => document.getElementById(id);
+function pretty(target, value) { q(target).textContent = JSON.stringify(value, null, 2); }
+async function render() {
+  let data;
+  q('reload').disabled = true;
+  try {
+    if (location.protocol === 'file:') {
+      data = JSON.parse(q('sample').textContent);
+      q('mode').textContent = '免安装预览：显示 V3 程序实际生成并随仓库保存的合成结果。运行 run_demo.py 可现场执行。';
+    } else {
+      const response = await fetch('/api/demo?' + new URLSearchParams({q:q('query').value,size:q('size').value}), {cache:'no-store'});
+      if (!response.ok) throw Error('请求失败');
+      data = await response.json();
+      q('mode').textContent = '实时本地运行：Python V3 核心刚刚重新查询内存数据库并生成标签。';
+    }
+    pretty('inventory', data.inventory_tree);
+    pretty('results', data.search);
+    q('label').textContent = data.print_tspl;
+    pretty('ops', data.print_ops);
+  } catch (_) {
+    q('mode').textContent = '演示没有运行成功。请检查本地终端是否仍开着。';
+  } finally { q('reload').disabled = false; }
+}
+q('controls').addEventListener('submit', event => { event.preventDefault(); render(); });
+if (location.protocol === 'file:') q('controls').hidden = true;
+render();
+</script>

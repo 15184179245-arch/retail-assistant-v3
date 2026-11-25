@@ -3,10 +3,10 @@
 与 S2 的 ``sale_status.py`` 同构：只放纯函数与常量，服务入口负责取连接（``get_db()``），
 这样单测不必 import search_server（省去 jieba 词典加载与 load_env 副作用）。
 
-口径（测试反馈 2026-09-05 拍板：售价=0 如实同步如实显示）：
+口径（老板 2026-09-05 拍板：售价=0 如实同步如实显示）：
     无售价 = ``IFNULL(sell_price, 0) <= 0``，=0 与 <0 都算，NULL 视同无价。
     ``sale_status`` 为空时**全量计入（含 frozen 呆滞货）**，与
-    ``合成测试对照表`` 的 1972 条对账口径一致；
+    ``_reports/unpriced-20260905.csv`` 的 1972 条对账口径一致；
     传 active / frozen / clearable 则只看该状态（供需要只看在售时用）。
 """
 import sqlite3
@@ -56,7 +56,7 @@ def query_unpriced(db: sqlite3.Connection, kw: str = "", page: int = 1,
     """查无售价商品清单（只读）。
 
     Args:
-        db: 已打开的 sample.sqlite 连接（需 ``row_factory = sqlite3.Row``）。
+        db: 已打开的 wujin.db 连接（需 ``row_factory = sqlite3.Row``）。
         kw / sale_status: 见 :func:`unpriced_where`。
         page: 页码，从 1 起；小于 1 就地夹到 1。
         page_size: 每页条数；小于 1 夹到 1，大于 ``UNPRICED_MAX_PAGE_SIZE`` 夹到上限。

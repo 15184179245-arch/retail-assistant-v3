@@ -16,12 +16,12 @@ class ValidateDictFieldTest(unittest.TestCase):
 
     def test_dict_field_keeps_dict(self):
         cleaned, err = validate_fields(
-            {"printer": {"ip": "192.0.2.50", "port": 9100}},
+            {"printer": {"ip": "192.0.2.10", "port": 9100}},
             {"printer": {"required": True, "type": dict, "message": "请提供打印机信息"}},
         )
         self.assertIsNone(err)
         self.assertIsInstance(cleaned["printer"], dict)
-        self.assertEqual(cleaned["printer"]["ip"], "192.0.2.50")
+        self.assertEqual(cleaned["printer"]["ip"], "192.0.2.10")
 
     def test_dict_field_rejects_non_dict(self):
         cleaned, err = validate_fields(
@@ -59,7 +59,7 @@ class ValidateBasicsTest(unittest.TestCase):
         self.assertIsNone(err)
         self.assertEqual(cleaned["items"], ["a"])
 
-    def test_missing_required测试输出_user_message(self):
+    def test_missing_required_reports_user_message(self):
         cleaned, err = validate_fields({}, {"name": {"required": True, "message": "请填写名称"}})
         self.assertIsNone(cleaned)
         self.assertIn("名称", err["user_message"])

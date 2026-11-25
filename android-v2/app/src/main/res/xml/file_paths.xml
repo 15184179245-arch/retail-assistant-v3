@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- 小票照片存 APP 外部私有目录 receipt/（getExternalFilesDir(null)/receipt） -->
+    <external-files-path name="receipts" path="receipt/" />
+    <!-- I19 商品照片 photos/（相机 TakePicture 经 FileProvider 直写待传文件） -->
+    <external-files-path name="product_photos" path="photos/" />
+    <!-- I4 治理导出 CSV（cacheDir 落盘，FileProvider 授权分享给微信/文件） -->
+    <cache-path name="shared_csv" path="." />
+    <!-- 内部版本推送：APK 下载到 cacheDir/apk/ 并通过 FileProvider 唤起系统安装 -->
+    <cache-path name="apk_downloads" path="apk/" />
+</paths>
